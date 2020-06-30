@@ -264,7 +264,7 @@ $ cd amazon-dsstne/
 ```
 You need to make some changes to the Dockerfile here in order not to get any errors in the future. First open the Dockerfile:
 ```
-
+$ sudo nano ./Dockerfile
 ```
 Now you need to replace ```RUN apt-get install -y libnetcdf-c++4-dev``` with the following:
 ```
@@ -277,10 +277,6 @@ $ RUN wget http://archive.ubuntu.com/ubuntu/pool/universe/n/netcdf-cxx/netcdf-cx
 ```
 and replace ```ENV PATH=/opt/amazon/dsstne/bin/:${PATH}``` with ```ENV PATH=/opt/amazon/dsstne/build/bin/:${PATH}```.
 
-You also need to tell the Docker to make use of NVIDIA Toolkit (its runtime should be nvidia).
-```
-
-```
 You can now build the image:
 ```
 $ sudo docker build -t amazon-dsstne .
@@ -306,9 +302,9 @@ Usage: predict -d <dataset_name> -n <network_file> -r <input_text_file> -i <inpu
     -r input_text_file: (required) path to the file with input signal to use to generate predictions (i.e. recommendations).
     -s filename (required) . to put the output recs to.
 ```
-If it all went well you need to start a new shell on a fresh Docker container:
+If it all went well you need to start a new shell on a fresh Docker container. But you have to set the runtime to nvidia so that the docker file could communicate with your GPU.
 ```
-$ sudo docker run -it amazon-dsstne /bin/bash
+$ sudo docker run -it --runtime=nvidia amazon-dsstne /bin/bash
 ```
 ## Run DSSTNE on some example datasets
 ```
@@ -333,3 +329,4 @@ train -c config.json -i gl_input.nc -o gl_output.nc -n gl.nc -b 256 -e 10
 # Generate predictions
 predict -b 256 -d gl -i features_input -o features_output -k 10 -n gl.nc -f ml-20m_ratings -s recs -r ml-20m_ratings
 ```
+Your predicitons will be stores in a folder named 'recs'.
