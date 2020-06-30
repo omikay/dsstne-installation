@@ -329,4 +329,4 @@ train -c config.json -i gl_input.nc -o gl_output.nc -n gl.nc -b 256 -e 10
 # Generate predictions
 predict -b 256 -d gl -i features_input -o features_output -k 10 -n gl.nc -f ml-20m_ratings -s recs -r ml-20m_ratings
 ```
-Your predicitons will be stores in a folder named 'recs'.
+Your predicitons will be stored in a folder named 'recs'.
