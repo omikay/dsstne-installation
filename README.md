@@ -34,3 +34,27 @@ To verify that your GPU is CUDA-capable, run the following in the command line:
 $ lspci | grep -i nvidia
 ```
 You need to see something like the following:
+![CUDA-Capable GPU](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-19-23.png)
+
+## Verify You Have a Supported Version of Linux
+```sh
+$ uname -m && cat /etc/*release
+```
+You need to see something like the following:
+![Supported Version of Linux](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-43-28.png)
+
+## Verify gcc is installed
+Run the following in the command line:
+```sh
+$ gcc --version
+```
+You need to see something like the following:
+![System Has gcc Installed](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-47-55.png)
+
+## Verify the System has the Correct Kernel Headers and Development Packages Installed
+The version of the kernel your system is running can be found by running the following command:
+```sh
+$ gcc --version
+```
+You need to see something like the following:
+![System Has gcc Installed](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-47-55.png)
