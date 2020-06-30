@@ -236,27 +236,53 @@ $ sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
 $ sudo systemctl restart docker
 ```
 ### Running the toolkit
-You can use any of the below situations as examples to run the container. Pay attention that the docker image used here is based on the image file seen on DSSTNE library.
+You can use any of the below situations as examples to run the container. Pay attention that the docker image used here is based on the image file seen on DSSTNE library. So, you need to skip here to the later section and come back afterwards to see how it does.
 ```
 #### Test nvidia-smi with the latest official CUDA image
 # Start a GPU enabled container on all GPUs
-sudo docker run --gpus all nvidia/cuda:10.0-base nvidia-smi
+sudo docker run --gpus all nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04 nvidia-smi
 
 # Start a GPU enabled container on two GPUs
-sudo docker run --gpus 2 nvidia/cuda:10.0-base nvidia-smi
+sudo docker run --gpus 2 nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04 nvidia-smi
 
 # Starting a GPU enabled container on specific GPUs
-sudo docker run --gpus '"device=1,2"' nvidia/cuda:10.0-base nvidia-smi
-sudo docker run --gpus '"device=UUID-ABCDEF,1"' nvidia/cuda:10.0-base nvidia-smi
+sudo docker run --gpus '"device=1,2"' nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04 nvidia-smi
+sudo docker run --gpus '"device=UUID-ABCDEF,1"' nvidia/cuda:9.1-cudnn7-devel-ubuntu16.04 nvidia-smi
 
 # Specifying a capability (graphics, compute, ...) for my container
 # Note this is rarely if ever used this way
 sudo docker run --gpus all,capabilities=utility nvidia/cuda:10.0-base nvidia-smi
 ```
+If you run it on all GPUs, you should see something like the following image:
+
+![NVIDIA Docker run](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2015-19-08.png)
+
 ## Build Amazon DSSTNE's Docker image
 ```
 $ git clone https://github.com/amznlabs/amazon-dsstne.git
 $ cd amazon-dsstne/
+```
+You need to make some changes to the Dockerfile here in order not to get any errors in the future. First open the Dockerfile:
+```
+
+```
+Now you need to replace ```RUN apt-get install -y libnetcdf-c++4-dev``` with the following:
+```
+$ RUN wget http://archive.ubuntu.com/ubuntu/pool/universe/n/netcdf-cxx/netcdf-cxx_4.3.0+ds.orig.tar.gz && \
+	  tar xzf netcdf-cxx_4.3.0+ds.orig.tar.gz && \
+	  cd netcdf-cxx4-4.3.0 && \
+    ./configure --disable-filter-testing && \
+    make && \
+    make install
+```
+and replace ```ENV PATH=/opt/amazon/dsstne/bin/:${PATH}``` with ```ENV PATH=/opt/amazon/dsstne/build/bin/:${PATH}```.
+
+You also need to tell the Docker to make use of NVIDIA Toolkit (its runtime should be nvidia).
+```
+
+```
+You can now build the image:
+```
 $ sudo docker build -t amazon-dsstne .
 ```
 ## Test the Docker image
@@ -283,4 +309,27 @@ Usage: predict -d <dataset_name> -n <network_file> -r <input_text_file> -i <inpu
 If it all went well you need to start a new shell on a fresh Docker container:
 ```
 $ sudo docker run -it amazon-dsstne /bin/bash
+```
+## Run DSSTNE on some example datasets
+```
+# Fetch Movielens dataset
+wget http://files.grouplens.org/datasets/movielens/ml-20m.zip
+
+# Extract ratings from dataset
+unzip -p ml-20m.zip ml-20m/ratings.csv > ml-20m_ratings.csv
+
+# Convert ml-20m_ratings.csv to format supported by generateNetCDF
+mv ml-20m_ratings.csv /opt/amazon/dsstne/samples/movielens
+cd /opt/amazon/dsstne/samples/movielens
+awk -f convert_ratings.awk ml-20m_ratings.csv > ml-20m_ratings
+
+# Generate NetCDF files for input and output layers
+generateNetCDF -d gl_input  -i ml-20m_ratings -o gl_input.nc  -f features_input  -s samples_input -c
+generateNetCDF -d gl_output -i ml-20m_ratings -o gl_output.nc -f features_output -s samples_input -c
+
+# Train the network
+train -c config.json -i gl_input.nc -o gl_output.nc -n gl.nc -b 256 -e 10
+
+# Generate predictions
+predict -b 256 -d gl -i features_input -o features_output -k 10 -n gl.nc -f ml-20m_ratings -s recs -r ml-20m_ratings
 ```
