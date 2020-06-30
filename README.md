@@ -30,7 +30,7 @@ The system we are using passes the first two conditions. However, for the sake o
 ## Verify You Have a CUDA-Capable GPU
 To verify that your GPU is CUDA-capable, run the following in the command line:
 
-```sh
+```
 $ lspci | grep -i nvidia
 ```
 You need to see something like the following:
@@ -38,7 +38,7 @@ You need to see something like the following:
 ![CUDA-Capable GPU](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-19-23.png)
 
 ## Verify You Have a Supported Version of Linux
-```sh
+```
 $ uname -m && cat /etc/*release
 ```
 You need to see something like the following:
@@ -47,7 +47,7 @@ You need to see something like the following:
 
 ## Verify gcc is installed
 Run the following in the command line:
-```sh
+```
 $ gcc --version
 ```
 You need to see something like the following:
@@ -56,7 +56,7 @@ You need to see something like the following:
 
 ## Verify the System has the Correct Kernel Headers and Development Packages Installed
 The kernel headers and development packages for the currently running kernel can be installed with:
-```sh
+```
 $ sudo apt-get install linux-headers-$(uname -r)
 ```
 ## Download and install the NVIDIA CUDA Toolkit
@@ -76,21 +76,21 @@ $ sudo apt-get update
 $ sudo apt-get -y install cuda
 ```
 ## Environment Setup
-```sh
+```
 $ export PATH=/usr/local/cuda-11.0/bin${PATH:+:${PATH}}
 ```
 
 ## POWER9 setup
 The NVIDIA Persistence Daemon should be automatically started for POWER9 installations. Check that it is running with the following command:
-```sh
+```
 $ systemctl status nvidia-persistenced
 ```
 If it is not active, run the following command:
-```sh
+```
 $ sudo systemctl enable nvidia-persistenced
 ```
 The udev rule must be disabled in order for the NVIDIA CUDA driver to function properly on POWER9 systems. Run the following to see the rules:
-```sh
+```
 $ sudo nano /lib/udev/rules.d/40-vm-hotadd.rules
 ```
 The rule would look like something like this:
@@ -98,12 +98,12 @@ The rule would look like something like this:
 ![Hotadd Rule](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2012-34-31.png)
 
 The part that we are interested in is:
-```sh
+```
 # Memory hotadd request
 SUBSYSTEM=="memory", ACTION=="add", DEVPATH=="/devices/system/memory/memory[0-9]*", TEST=="state", ATTR{state}="online"
 ```
-This rule must be disabled by copying the file to ```sh/etc/udev/rules.d``` and commenting out, removing, or changing the hot-pluggable memory rule in the ```sh/etc``` copy so that it does not apply to POWER9 NVIDIA systems.
-```sh
+This rule must be disabled by copying the file to ```/etc/udev/rules.d``` and commenting out, removing, or changing the hot-pluggable memory rule in the ```/etc``` copy so that it does not apply to POWER9 NVIDIA systems.
+```
 # to copy
 $ sudo cp /lib/udev/rules.d/40-vm-hotadd.rules /etc/udev/rules.d
 # to modify
