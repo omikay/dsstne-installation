@@ -170,5 +170,13 @@ $ sudo apt-get install g++ freeglut3-dev build-essential libx11-dev \
     libxmu-dev libxi-dev libglu1-mesa libglu1-mesa-dev
 ```
 ### Install the source code for cuda-gdb (optional - We didn't do it!)
-CUDA-GDB is the NVIDIA tool for debugging CUDA applications running on Linux and QNX. You may wanna consult https://docs.nvidia.com/cuda/cuda-gdb/index.html for installing the package.
+CUDA-GDB is the NVIDIA tool for debugging CUDA applications running on Linux and QNX. To obtain a copy of the source code for cuda-gdb using the RPM and Debian installation methods, the cuda-gdb-src package must be installed. You may want to consult https://docs.nvidia.com/cuda/cuda-gdb/index.html for installing the package.
 
+## Uninstalling CUDA and NVIDIA drivers
+In case you wanted to do everything again from scratch, or have an older version installed, you better remove the existing packages and dependencies, and install the suitable versions from the beginning. You can run the following commands:
+```
+# To remove CUDA Toolkit:
+$ sudo apt-get --purge remove "*cublas*" "cuda*" "nsight*"
+# To remove NVIDIA Drivers:
+$ sudo apt-get --purge remove "*nvidia*"
+```
