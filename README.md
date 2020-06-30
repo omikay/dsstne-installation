@@ -180,3 +180,107 @@ $ sudo apt-get --purge remove "*cublas*" "cuda*" "nsight*"
 # To remove NVIDIA Drivers:
 $ sudo apt-get --purge remove "*nvidia*"
 ```
+## Installation of Docker engine
+As was previously mentioned, we would like to install the Docker version of DSSTNE. Therefore, we need to install Docker Engine as well. You can find a detailed installation manual at https://docs.docker.com/engine/install/ubuntu/. In this section, however, we will continue with installation of the latest Docker Engine by far on Ubuntu 20.04 (same for 18.04).
+### Uninstall old versions
+If you happen to have some older version of Docker installed, uninstall it first.
+```
+$ sudo apt-get remove docker docker-engine docker.io containerd runc
+```
+### Setup the repository
+```
+$ sudo apt-get update
+
+$ sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg-agent \
+    software-properties-common
+    
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+Search for the last 8 characters of the fingerprint, and verify that you now have the key with the fingerprint ```9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88``` by running the following command:
+```
+$ sudo apt-key fingerprint 0EBFCD88
+```
+### set up the stable repo
+```
+$ sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+```
+### Install the Docker Engine
+```
+$ sudo apt-get update
+$ sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+### Verify the Docker Engine
+```
+$ sudo docker run hello-world
+```
+You should see something like this:
+
+![Hello World by Docker](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2014-51-59.png)
+
+## Installation of NVIDIA Container Toolkit
+The NVIDIA Container Toolkit allows users to build and run GPU accelerated Docker containers. The toolkit includes a container runtime library and utilities to automatically configure containers to leverage NVIDIA GPUs. In oder to use the toolkit, we need to make sure that Docker Engine 19.03 or higher has been installed on the computer and NVIDIA drivers are up and running. If you have been following this guide since the beginning, then you are ready to install the NVIDIA Container Toolkit:
+# Add the package repositories
+```
+$ distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+$ curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+$ curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+$ sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+$ sudo systemctl restart docker
+```
+### Running the toolkit
+You can use any of the below situations as examples to run the container. Pay attention that the docker image used here is based on the image file seen on DSSTNE library.
+```
+#### Test nvidia-smi with the latest official CUDA image
+# Start a GPU enabled container on all GPUs
+sudo docker run --gpus all nvidia/cuda:10.0-base nvidia-smi
+
+# Start a GPU enabled container on two GPUs
+sudo docker run --gpus 2 nvidia/cuda:10.0-base nvidia-smi
+
+# Starting a GPU enabled container on specific GPUs
+sudo docker run --gpus '"device=1,2"' nvidia/cuda:10.0-base nvidia-smi
+sudo docker run --gpus '"device=UUID-ABCDEF,1"' nvidia/cuda:10.0-base nvidia-smi
+
+# Specifying a capability (graphics, compute, ...) for my container
+# Note this is rarely if ever used this way
+sudo docker run --gpus all,capabilities=utility nvidia/cuda:10.0-base nvidia-smi
+```
+## Build Amazon DSSTNE's Docker image
+```
+$ git clone https://github.com/amznlabs/amazon-dsstne.git
+$ cd amazon-dsstne/
+$ sudo docker build -t amazon-dsstne .
+```
+## Test the Docker image
+```
+$ sudo docker run --rm -it amazon-dsstne predict
+```
+The following error that is 'Missing required argument' error is expected to be seen after this test:
+```
+Error: Missing required argument: -d: dataset_name is not specified.
+Predict: Generates predictions from a trained neural network given a signals/input dataset.
+Usage: predict -d <dataset_name> -n <network_file> -r <input_text_file> -i <input_feature_index> -o <output_feature_index> -f <filters_json> [-b <batch_size>] [-k <num_recs>] [-l layer] [-s input_signals_index] [-p score_precision]
+    -b batch_size: (default = 1024) the number records/input rows to process in a batch.
+    -d dataset_name: (required) name for the dataset within the netcdf file.
+    -f samples filterFileName .
+    -i input_feature_index: (required) path to the feature index file, used to tranform input signals to correct input feature vector.
+    -k num_recs: (default = 100) The number of predictions (sorted by score to generate). Ignored if -l flag is used.
+    -l layer: (default = Output) the network layer to use for predictions. If specified, the raw scores for each node in the layer is output in order.
+    -n network_file: (required) the trained neural network in NetCDF file.
+    -o output_feature_index: (required) path to the feature index file, used to tranform the network output feature vector to appropriate features.
+    -p score_precision: (default = 4.3f) precision of the scores in output
+    -r input_text_file: (required) path to the file with input signal to use to generate predictions (i.e. recommendations).
+    -s filename (required) . to put the output recs to.
+```
+If it all went well you need to start a new shell on a fresh Docker container:
+```
+$ sudo docker run -it amazon-dsstne /bin/bash
+```
