@@ -27,7 +27,7 @@ The system we are using passes the first two conditions. However, for the sake o
 
 (In case of not seeing what is stated here, please go to the installation guide provided above to see how you could solve the problem)
 
-## Verify You Have a CUDA-Capable GPU
+### Verify You Have a CUDA-Capable GPU
 To verify that your GPU is CUDA-capable, run the following in the command line:
 
 ```
@@ -37,7 +37,7 @@ You need to see something like the following:
 
 ![CUDA-Capable GPU](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-19-23.png)
 
-## Verify You Have a Supported Version of Linux
+### Verify You Have a Supported Version of Linux
 ```
 $ uname -m && cat /etc/*release
 ```
@@ -45,7 +45,7 @@ You need to see something like the following:
 
 ![Supported Version of Linux](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-43-28.png)
 
-## Verify gcc is installed
+### Verify gcc is installed
 Run the following in the command line:
 ```
 $ gcc --version
@@ -54,12 +54,12 @@ You need to see something like the following:
 
 ![System Has gcc Installed](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-47-55.png)
 
-## Verify the System has the Correct Kernel Headers and Development Packages Installed
+### Verify the System has the Correct Kernel Headers and Development Packages Installed
 The kernel headers and development packages for the currently running kernel can be installed with:
 ```
 $ sudo apt-get install linux-headers-$(uname -r)
 ```
-## Download and install the NVIDIA CUDA Toolkit
+### Download and install the NVIDIA CUDA Toolkit
 The NVIDIA CUDA Toolkit is available at http://developer.nvidia.com/cuda-downloads. The following is what you need to choose to download the right file for this version of Ubuntu:
 
 ![CUDA Toolkit version](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2012-12-39.png)
@@ -75,12 +75,15 @@ $ sudo apt-key add /var/cuda-repo-ubuntu1804-11-0-local/7fa2af80.pub
 $ sudo apt-get update
 $ sudo apt-get -y install cuda
 ```
-## Environment Setup
+Reboot the system to load the NVIDIA drivers.
+### Environment Setup
 ```
 $ export PATH=/usr/local/cuda-11.0/bin${PATH:+:${PATH}}
+$ export LD_LIBRARY_PATH=/usr/local/cuda-11.0/lib64\
+                         ${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 ```
 
-## POWER9 setup
+### POWER9 setup
 The NVIDIA Persistence Daemon should be automatically started for POWER9 installations. Check that it is running with the following command:
 ```
 $ systemctl status nvidia-persistenced
@@ -109,5 +112,63 @@ $ sudo cp /lib/udev/rules.d/40-vm-hotadd.rules /etc/udev/rules.d
 # to modify
 sudo sed -i '/SUBSYSTEM=="memory", ACTION=="add"/d' /etc/udev/rules.d/40-vm-hotadd.rules
 ```
+### A writable copy of the samples
+Install a writable copy of the samples then build and run the nbody sample:
+```
+$ cuda-install-samples-11.0.sh ~
+$ cd ~/NVIDIA_CUDA-11.0_Samples/5_Simulations/nbody
+$ make
+$ ./nbody
+```
 You will need to reboot the system to initialize the above changes.
+
+### Verify Driver Installation
+If you installed the driver, verify that the correct version of it is loaded. When the driver is loaded, the driver version can be found by executing the command:
+```
+$ cat /proc/driver/nvidia/version
+```
+### Checking the CUDA Toolkit version
+```
+$ nvcc --version
+```
+### Compiling the Examples
+The NVIDIA CUDA Toolkit includes sample programs in source form. You should compile them by changing to ```~/NVIDIA_CUDA-11.0_Samples``` and typing ```make```. The resulting binaries will be placed under ```~/NVIDIA_CUDA-11.0_Samples/bin```.
+### Running the binaries
+After compilation, find and run ```deviceQuery``` under ```~/NVIDIA_CUDA-11.0_Samples```. For our installations run the following in the commandline:
+```
+$ ./NVIDIA_CUDA-11.0_Samples/bin/x86_64/linux/release/deviceQuery
+```
+If the CUDA software is installed and configured correctly, the output for ```deviceQuery``` should look similar to that shown in the figure below:
+
+![Running Binaries](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2013-11-05.png)
+
+Running the ```bandwidthTest``` program ensures that the system and the CUDA-capable device are able to communicate correctly.
+```
+$ ./NVIDIA_CUDA-11.0_Samples/bin/x86_64/linux/release/deviceQuery
+```
+Its output looks like something like this:
+
+![Bandwidth Test](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2013-15-05.png)
+
+### Install Nsight Eclipse Plugins
+First you need to download and install the Eclipse IDE for C/C++ developers. You can run the following in the command line:
+```
+$ sudo apt-get update
+# The link below needs to be updated, so you can check the latest version here: https://www.eclipse.org/downloads/packages/, and make sure to download Eclipse IDE for C/C++ Developers
+$ wget http://eclipse.mirror.rafal.ca/technology/epp/downloads/release/2020-06/R/eclipse-cpp-2020-06-R-linux-gtk-x86_64.tar.gz
+# The filename might need to be updated
+$ sudo tar xzvf eclipse-cpp-2020-06-R-linux-gtk-x86_64.tar.gz
+```
+To install the Nsight Eclipse Plugins, run the following command:
+```
+$ /usr/local/cuda-11.0/bin/nsight_ee_plugins_manage.sh install <eclipse_dir> 
+```
+Note that ```<eclipse_dir>``` is where you have you 'eclipse' directory, which is where that 'eclipse-cpp-2020-06-R-linux-gtk-x86_64.tar.gz' file was extracted.
+### Install third-party libraries
+```
+$ sudo apt-get install g++ freeglut3-dev build-essential libx11-dev \
+    libxmu-dev libxi-dev libglu1-mesa libglu1-mesa-dev
+```
+### Install the source code for cuda-gdb (optional - We didn't do it!)
+CUDA-GDB is the NVIDIA tool for debugging CUDA applications running on Linux and QNX. You may wanna consult https://docs.nvidia.com/cuda/cuda-gdb/index.html for installing the package.
 
