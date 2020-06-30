@@ -34,6 +34,7 @@ To verify that your GPU is CUDA-capable, run the following in the command line:
 $ lspci | grep -i nvidia
 ```
 You need to see something like the following:
+
 ![CUDA-Capable GPU](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-19-23.png)
 
 ## Verify You Have a Supported Version of Linux
@@ -41,6 +42,7 @@ You need to see something like the following:
 $ uname -m && cat /etc/*release
 ```
 You need to see something like the following:
+
 ![Supported Version of Linux](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-43-28.png)
 
 ## Verify gcc is installed
@@ -49,6 +51,7 @@ Run the following in the command line:
 $ gcc --version
 ```
 You need to see something like the following:
+
 ![System Has gcc Installed](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2011-47-55.png)
 
 ## Verify the System has the Correct Kernel Headers and Development Packages Installed
@@ -58,6 +61,7 @@ $ sudo apt-get install linux-headers-$(uname -r)
 ```
 ## Download and install the NVIDIA CUDA Toolkit
 The NVIDIA CUDA Toolkit is available at http://developer.nvidia.com/cuda-downloads. The following is what you need to choose to download the right file for this version of Ubuntu:
+
 ![CUDA Toolkit version](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2012-12-39.png)
 
 The following steps should be run in the commandline to download and install the toolkit on the host machine. The version of CUDA to be installed will be CUDA v11.
@@ -90,6 +94,7 @@ The udev rule must be disabled in order for the NVIDIA CUDA driver to function p
 $ sudo nano /lib/udev/rules.d/40-vm-hotadd.rules
 ```
 The rule would look like something like this:
+
 ![Hotadd Rule](https://github.com/omikay/dsstne-installation/blob/master/Images/Screenshot%20from%202020-06-30%2012-34-31.png)
 
 The part that we are interested in is:
